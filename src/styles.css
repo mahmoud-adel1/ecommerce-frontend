@@ -83,9 +83,9 @@ h6{
     font-size:13px
 }
 
-a{
+/* a{
     display:inline-block
-}
+} */
 
 a:active,a:focus,a:hover{
     text-decoration:none;
@@ -721,6 +721,10 @@ table.table.table-bordered th{
 }
 .detail-section{
     margin-top:60px
+}
+
+.detail-img{
+    width: 30%;
 }
 /**/
 
