@@ -2,13 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../common/product';
 import { CommonModule, NgFor } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ProductCategory } from '../../common/product-category';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap'
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [NgFor,CommonModule, RouterLink],
+  imports: [NgFor,CommonModule, RouterLink, NgbModule],
   templateUrl: './product-list-grid.component.html',
   // templateUrl: './product-list-table.component.html',
   // templateUrl: './product-list.component.html',
@@ -18,8 +18,17 @@ export class ProductListComponent implements OnInit{
   
   products: Product[] = [];
   currentCategoryId: number = 1;
+  previousCategoryId: number = 1;
+  previousKeyword: string = '';
   currentCategoryName: string = '';
+  
+  pageNumber: number = 1;
+  pageSize: number = 5;
+  totalElements: number = 0;
+  
   searchMode: boolean = false;
+
+
 
   constructor(private productService: ProductService,
               private route: ActivatedRoute) { }
@@ -41,9 +50,21 @@ export class ProductListComponent implements OnInit{
 
   handleSearchProducts() {
     const keyword: string = this.route.snapshot.paramMap.get('keyword')!;
-    this.productService.searchProducts(keyword).subscribe(data=>{
-      this.products = data;
-    })
+
+    if(keyword != this.previousKeyword) {
+      this.pageNumber = 1;
+    }
+
+    this.previousKeyword = keyword;
+
+    this.productService.searchProductsPaginate(keyword,
+                                               this.pageNumber-1,
+                                               this.pageSize).subscribe(data=>{
+                                                this.products = data._embedded.products;
+                                                this.pageNumber = data.page.number+1;
+                                                this.pageSize = data.page.size;
+                                                this.totalElements = data.page.totalElements;
+                                               })
   }
 
   handleListProducts() {
@@ -56,12 +77,32 @@ export class ProductListComponent implements OnInit{
       this.currentCategoryId = 1;
       this.currentCategoryName = 'Books';
     }
+
+    if(this.previousCategoryId != this.currentCategoryId) {
+      this.pageNumber = 1;
+    }
+
+    this.previousCategoryId = this.currentCategoryId;
+
+    console.log(`currentCategoryId=${this.currentCategoryId}, pageNumber=${this.pageNumber}`);
     
-    this.productService.getProductList(this.currentCategoryId).subscribe(
-      data=>{
-        this.products = data;
-      }
-    )
+    this.productService.getProductListPaginate(this.currentCategoryId,
+                                               this.pageNumber-1,
+                                               this.pageSize).subscribe(
+                                                data=>{
+                                                  this.products = data._embedded.products;
+                                                  this.pageNumber = data.page.number+1;
+                                                  this.pageSize = data.page.size;
+                                                  this.totalElements = data.page.totalElements;
+                                                }
+                                              )
+  }
+
+
+  updatePageSize(pageSize: string) {
+    this.pageSize = +pageSize;
+    this.pageNumber = 1;
+    this.listProducts();
   }
 
   
