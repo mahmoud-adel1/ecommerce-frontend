@@ -13,7 +13,7 @@
                             <h1>{{tempProduct.name}}</h1>
                         </a>
                             <div class="price"> {{tempProduct.unitPrice}} </div>
-                        <a href="#" class="btn primary-btn"> Add To Cart </a>
+                        <button (click)="addToCart(tempProduct)" class="btn btn-primary btn-sm"> Add To Cart </button>
                     </div>
                 </div>
 
